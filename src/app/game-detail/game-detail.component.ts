@@ -37,6 +37,7 @@ export class GameDetailComponent implements OnInit {
   filteredOptions$: Observable<Player[]> = of([])
 
   players$ = this.games.players$
+  autoCompleteDisplay = (player: any) => (player || {} as Player).name ? (player as Player).name : player;
 
   constructor(
     private games: GamesService,
@@ -82,6 +83,7 @@ export class GameDetailComponent implements OnInit {
         startWith(''),
         map(value => {
           if (value == null) return players.filter(p => !pmap.has(p.id))
+          if (!value.toLowerCase) return []
           const lower = value.toLowerCase()
           return players.filter(p => {
             if (pmap.has(p.id)) return false
@@ -104,16 +106,22 @@ export class GameDetailComponent implements OnInit {
 
   async addPlayerToGame(player: Player) {
     console.log(player)
-    // this.details.game.players.push(new PlayerAttendance(false, player.id))
-    // this.games.update(this.details.game)
+    await this.games.addPlayer(this.details.game, player)
   }
 
   async selectPlayer($event: MatAutocompleteSelectedEvent) {
     const player = $event.option.value as Player
+    this.addPlayer.reset()
     await this.addPlayerToGame(player)
   }
 
   async deletePlayer(player: Player) {
     await this.games.deletePlayer(player)
+  }
+
+  async updateConfirmation(attendance: PlayerAttendance, value: boolean) {
+    attendance.isConfirmed = value
+    await this.games.update(this.details.game)
+
   }
 }

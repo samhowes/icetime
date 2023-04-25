@@ -1,0 +1,26 @@
+<h1>{{title}}</h1>
+
+<form [formGroup]="form" class="existing-form">
+  <mat-form-field>
+    <mat-label>Name</mat-label>
+    <input matInput
+           formControlName="name">
+  </mat-form-field>
+</form>
+
+<mat-dialog-actions>
+  <div class="flex flex-row">
+    <div class="flex grow">
+      <button mat-button [matDialogClose]="false">Cancel
+      </button>
+    </div>
+    <button mat-raised-button color="primary"
+            [disabled]="!form.dirty"
+            (click)="save()"
+            type="submit"
+    >Save</button>
+    <div class="flex justify-center align-middle items-center" *ngIf="isBusy">
+      <mat-spinner [diameter]="25"></mat-spinner>
+    </div>
+  </div>
+</mat-dialog-actions>

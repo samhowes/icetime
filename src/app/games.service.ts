@@ -17,7 +17,7 @@ export class GameDetails {
   providedIn: 'root'
 })
 export class GamesService {
-  private games: AngularFirestoreCollection<Game> = this.db.collection('games')
+  private _games: AngularFirestoreCollection<Game> = this.db.collection('games')
   private _players = this.db.collection<Player>('players')
   players$: Observable<Player[]> = this._players
     .valueChanges(idObj)
@@ -31,11 +31,11 @@ export class GamesService {
   }
 
   getGames(): Observable<Game[]> {
-    return this.games.valueChanges(idObj)
+    return this._games.valueChanges(idObj)
   }
 
   getById(id: string): Observable<Game | undefined> {
-    return this.games.doc(id)
+    return this._games.doc(id)
       .valueChanges({idField: 'id'})
   }
 
@@ -86,5 +86,15 @@ export class GamesService {
 
   async updatePlayer(id: string, value: Player) {
     await this._players.doc(id).update(value)
+  }
+
+  async createGame(game: Game): Promise<void> {
+    await this._games.add(game)
+  }
+
+  async addPlayer(game: Game, player: Player) {
+    const doc = this._players.doc(player.id)
+    game.players.push({isConfirmed: false, playerId: doc.ref})
+    await this._games.doc(game.id).set(game)
   }
 }

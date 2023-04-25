@@ -3,6 +3,8 @@ import {of, tap} from "rxjs";
 import {Router} from "@angular/router";
 import {GamesService} from "../games.service";
 import {DocumentReference} from "@angular/fire/compat/firestore";
+import {MatDialog} from "@angular/material/dialog";
+import {EditGameComponent} from "../edit-game/edit-game.component";
 
 export interface Game {
   id: string,
@@ -27,15 +29,25 @@ export interface Player {
   styleUrls: ['./game-list.component.scss']
 })
 export class GameListComponent implements OnInit {
-  games$ = this.games.getGames().pipe(tap(_ => this.isBusy = false))
   isBusy = true;
+  games$ = this.games.getGames().pipe(tap(_ => {
+    this.isBusy = false;
+  }))
 
   constructor(
     private router: Router,
     private games: GamesService,
+    private dialog: MatDialog,
   ) {
   }
 
   ngOnInit(): void {
+    this.createGame()
+  }
+
+  createGame() {
+    this.dialog.open(EditGameComponent, {
+      minWidth: '300px',
+      data: {} as Game})
   }
 }

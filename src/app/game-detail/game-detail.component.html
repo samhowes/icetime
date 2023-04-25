@@ -15,20 +15,20 @@
       <mat-card-title class="block">
         <div class="flex flex-row">
           <span class="grow">{{details.game.name}}</span>
-          <button mat-raised-button [disabled]="!form.dirty" color="primary">Save</button>
+<!--          <button mat-raised-button [disabled]="!form.dirty" color="primary">Save</button>-->
         </div>
       </mat-card-title>
     </mat-card-header>
     <mat-card-content>
       <h2>Players</h2>
-      <form [formGroup]="form" class="existing-form">
+      <form [formGroup]="form" class="existing-form" *ngIf="controls.length">
         <div class="grid grid-cols-4">
           <p class="flex justify-center col-span-1">Confirmed</p>
           <p class="col-span-3">Player Name</p>
 
           <ng-container *ngFor="let c of controls">
             <div class="flex items-center justify-center col-span-1">
-              <mat-checkbox [formControl]="c.control"></mat-checkbox>
+              <mat-checkbox [formControl]="c.control" (change)="updateConfirmation(c.a, c.control.value)"></mat-checkbox>
             </div>
             <div class="col-span-3 flex flex-row">
               <span class="inline-flex items-center grow">{{c.player!.name}}</span>
@@ -47,7 +47,7 @@
         <div class="flex flex-row">
           <div class="grow name-wrapper">
             <mat-form-field appearance="fill">
-              <mat-label>Player Name</mat-label>
+              <mat-label>Add player by Name</mat-label>
               <input type="text"
                      placeholder="Type to add player"
                      aria-label="Number"
@@ -55,6 +55,7 @@
                      [formControl]="addPlayer"
                      [matAutocomplete]="auto">
               <mat-autocomplete #auto="matAutocomplete"
+                                [displayWith]="autoCompleteDisplay"
                                 (optionSelected)="selectPlayer($event)"
               >
                 <mat-option *ngFor="let player of filteredOptions$ | async" [value]="player">
