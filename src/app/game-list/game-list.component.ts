@@ -27,7 +27,8 @@ export interface Player {
   styleUrls: ['./game-list.component.scss']
 })
 export class GameListComponent implements OnInit {
-  games$ = this.games.getGames().pipe(tap(g => console.log(g)))
+  games$ = this.games.getGames().pipe(tap(_ => this.isBusy = false))
+  isBusy = true;
 
   constructor(
     private router: Router,

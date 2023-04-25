@@ -83,4 +83,8 @@ export class GamesService {
   getPlayer(id: string): Observable<Player|undefined> {
     return this._players.doc(id).valueChanges()
   }
+
+  async updatePlayer(id: string, value: Player) {
+    await this._players.doc(id).update(value)
+  }
 }

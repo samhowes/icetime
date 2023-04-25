@@ -1,0 +1,8 @@
+<mat-card class="default-card">
+  <mat-action-list>
+    <button mat-list-item *ngFor="let player of players$ | async"
+            [routerLink]="['/players', player.id]"
+      >
+      <span class="grow">{{player.name}}</span><mat-icon>arrow_forward</mat-icon></button>
+  </mat-action-list>
+</mat-card>

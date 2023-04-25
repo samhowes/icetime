@@ -14,13 +14,15 @@ import {getFirestore, provideFirestore} from "@angular/fire/firestore";
 import {AngularFireModule} from "@angular/fire/compat";
 import {ReactiveFormsModule} from "@angular/forms";
 import { PlayerDetailsComponent } from './player-details/player-details.component';
+import { PlayerListComponent } from './player-list/player-list.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     GameListComponent,
     GameDetailComponent,
-    PlayerDetailsComponent
+    PlayerDetailsComponent,
+    PlayerListComponent
   ],
   imports: [
     BrowserModule,
