@@ -1,0 +1,9 @@
+<div class="wrapper">
+  <a *ngFor="let game of games$ | async" [routerLink]="['/games', game.id]">
+  <mat-card >
+    <mat-card-content>
+    {{game.name}}
+    </mat-card-content>
+  </mat-card>
+  </a>
+</div>
