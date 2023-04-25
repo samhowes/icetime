@@ -71,10 +71,12 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "icetime:build:production"
+              "browserTarget": "icetime:build:production",
+              "port": 3200
             },
             "development": {
-              "browserTarget": "icetime:build:development"
+              "browserTarget": "icetime:build:development",
+              "port": 3200
             }
           },
           "defaultConfiguration": "development"

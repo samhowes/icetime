@@ -1,7 +1,82 @@
-<div *ngIf="game">
+<div>
+  <a routerLink="/games" class="nav-button" tabindex="-1">
+    <button mat-icon-button type="button">
+      <mat-icon>arrow_back</mat-icon>
+      Games
+    </button>
+  </a>
+</div>
+<div class="flex justify-center" *ngIf="isBusy">
+  <mat-spinner></mat-spinner>
+</div>
+<div *ngIf="!isBusy">
   <mat-card>
     <mat-card-header>
-      <mat-card-title>{{game.name}}</mat-card-title>
+      <mat-card-title class="block">
+        <div class="flex flex-row">
+          <span class="grow">{{details.game.name}}</span>
+          <button mat-raised-button [disabled]="!form.dirty" color="primary">Save</button>
+        </div>
+      </mat-card-title>
     </mat-card-header>
+    <mat-card-content>
+      <h2>Players</h2>
+      <form [formGroup]="form" class="existing-form">
+        <div class="grid grid-cols-4">
+          <p class="flex justify-center col-span-1">Confirmed</p>
+          <p class="col-span-3">Player Name</p>
+
+          <ng-container *ngFor="let c of controls">
+            <div class="flex items-center justify-center col-span-1">
+              <mat-checkbox [formControl]="c.control"></mat-checkbox>
+            </div>
+            <div class="col-span-3 flex flex-row">
+              <span class="inline-flex items-center grow">{{c.player!.name}}</span>
+              <button mat-icon-button [matMenuTriggerFor]="menu">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #menu="matMenu">
+                <button mat-menu-item [routerLink]="['/players', c.player.id]">Go to details</button>
+                <button mat-menu-item>Remove</button>
+              </mat-menu>
+            </div>
+          </ng-container>
+        </div>
+      </form>
+      <form [formGroup]="addPlayerForm">
+        <div class="flex flex-row">
+          <div class="grow name-wrapper">
+            <mat-form-field appearance="fill">
+              <mat-label>Player Name</mat-label>
+              <input type="text"
+                     placeholder="Type to add player"
+                     aria-label="Number"
+                     matInput
+                     [formControl]="addPlayer"
+                     [matAutocomplete]="auto">
+              <mat-autocomplete #auto="matAutocomplete"
+                                (optionSelected)="selectPlayer($event)"
+              >
+                <mat-option *ngFor="let player of filteredOptions$ | async" [value]="player">
+                  {{player.name}}
+                </mat-option>
+              </mat-autocomplete>
+            </mat-form-field>
+          </div>
+          <button mat-mini-fab type="submit"
+                  [disabled]="!addPlayer.value"
+                  (click)="createNewPlayer(addPlayer.value!)">
+            <mat-icon>add</mat-icon>
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
   </mat-card>
+</div>
+
+<div>
+  <div *ngFor="let player of players$ | async" class="flex flex-row">
+    {{player.name}}
+    <button mat-stroked-button (click)="deletePlayer(player)">Delete</button>
+  </div>
 </div>
