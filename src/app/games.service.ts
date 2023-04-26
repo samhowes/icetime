@@ -98,4 +98,19 @@ export class GamesService {
     game.players.push({isConfirmed: false, playerId: doc.ref})
     await this._games.doc(game.id).set(game)
   }
+
+  async invitePlayer() {
+    console.log('what')
+    const email = {
+      to: ['sam@samhowes.com'],
+      from: 'icetime@samhowes.com',
+      message: {
+        subject: 'Hello from Firebase!',
+        text: 'This is the plaintext section of the email body.',
+        html: 'This is the <code>HTML</code> section of the email body.',
+      }
+    }
+    const ref = await this.db.collection('mail').add(email)
+    console.log(ref.id)
+  }
 }

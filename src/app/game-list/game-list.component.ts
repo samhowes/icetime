@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {of, tap} from "rxjs";
 import {Router} from "@angular/router";
 import {GamesService} from "../games.service";
-import {DocumentReference} from "@angular/fire/compat/firestore";
+import {AngularFirestore, DocumentReference} from "@angular/fire/compat/firestore";
 import {MatDialog} from "@angular/material/dialog";
 import {EditGameComponent} from "../edit-game/edit-game.component";
 
