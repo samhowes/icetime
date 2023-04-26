@@ -89,7 +89,8 @@ export class GamesService {
   }
 
   async createGame(game: Game): Promise<void> {
-    await this._games.add(game)
+    const ref = await this._games.add(game)
+    game.id = ref.id
   }
 
   async addPlayer(game: Game, player: Player) {

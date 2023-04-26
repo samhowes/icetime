@@ -75,9 +75,3 @@
   </mat-card>
 </div>
 
-<div>
-  <div *ngFor="let player of players$ | async" class="flex flex-row">
-    {{player.name}}
-    <button mat-stroked-button (click)="deletePlayer(player)">Delete</button>
-  </div>
-</div>

@@ -42,12 +42,16 @@ export class GameListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.createGame()
   }
 
   createGame() {
-    this.dialog.open(EditGameComponent, {
+    const ref = this.dialog.open(EditGameComponent, {
       minWidth: '300px',
       data: {} as Game})
+    ref.afterClosed().subscribe(res => {
+      if (!res) return
+      const game = res as Game
+      this.router.navigate(['/games', game.id]).then()
+    })
   }
 }
