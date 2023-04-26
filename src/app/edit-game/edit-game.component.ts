@@ -1,8 +1,8 @@
 import {Component, Inject, OnInit} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {Game} from "../game-list/game-list.component";
 import {FormBuilder, FormGroup} from "@angular/forms";
 import {GamesService} from "../games.service";
+import {Game} from "../game-list/game";
 
 @Component({
   selector: 'app-edit-game',

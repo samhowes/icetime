@@ -1,12 +1,15 @@
 import {Injectable} from '@angular/core';
 import {filter, map, Observable, of, share, shareReplay, switchMap, tap} from "rxjs";
-import {Game, Player, PlayerAttendance} from "./game-list/game-list.component";
 import {AngularFirestore, AngularFirestoreCollection, DocumentReference} from "@angular/fire/compat/firestore";
+import {Game, PlayerAttendance, Player} from "./game-list/game";
 
 const idObj = {idField: 'id'}
 
 export class GameDetails {
   players = new Map<PlayerAttendance, Player>();
+  confirmed: Player[] = [];
+  pending: Player[] = [];
+  declined: Player[] = []
   constructor(
     public game: Game
   ) {
@@ -45,13 +48,13 @@ export class GamesService {
         if (!game) return of(undefined)
         return this.players$.pipe(
           map(players => {
-            console.log('new details')
 
             const pMap = new Map<string, Player>()
             for (const p of players) {
               pMap.set(p.id, p)
             }
             const details = new GameDetails(game)
+            if (!game.players) game.players = []
             for (const a of game.players) {
               details.players.set(a, pMap.get(a.playerId.id)!)
             }
@@ -95,7 +98,7 @@ export class GamesService {
 
   async addPlayer(game: Game, player: Player) {
     const doc = this._players.doc(player.id)
-    game.players.push({isConfirmed: false, playerId: doc.ref})
+    game.players.push({status: 'pending', playerId: doc.ref})
     await this._games.doc(game.id).set(game)
   }
 

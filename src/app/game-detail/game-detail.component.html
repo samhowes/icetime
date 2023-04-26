@@ -15,34 +15,11 @@
       <mat-card-title class="block">
         <div class="flex flex-row">
           <span class="grow">{{details.game.name}}</span>
-<!--          <button mat-raised-button [disabled]="!form.dirty" color="primary">Save</button>-->
+          <!--          <button mat-raised-button [disabled]="!form.dirty" color="primary">Save</button>-->
         </div>
       </mat-card-title>
     </mat-card-header>
     <mat-card-content>
-      <h2>Players</h2>
-      <form [formGroup]="form" class="existing-form" *ngIf="controls.length">
-        <div class="grid grid-cols-4">
-          <p class="flex justify-center col-span-1">Confirmed</p>
-          <p class="col-span-3">Player Name</p>
-
-          <ng-container *ngFor="let c of controls">
-            <div class="flex items-center justify-center col-span-1">
-              <mat-checkbox [formControl]="c.control" (change)="updateConfirmation(c.a, c.control.value)"></mat-checkbox>
-            </div>
-            <div class="col-span-3 flex flex-row">
-              <span class="inline-flex items-center grow">{{c.player!.name}}</span>
-              <button mat-icon-button [matMenuTriggerFor]="menu">
-                <mat-icon>more_vert</mat-icon>
-              </button>
-              <mat-menu #menu="matMenu">
-                <button mat-menu-item [routerLink]="['/players', c.player.id]">Go to details</button>
-                <button mat-menu-item>Remove</button>
-              </mat-menu>
-            </div>
-          </ng-container>
-        </div>
-      </form>
       <form [formGroup]="addPlayerForm">
         <div class="flex flex-row">
           <div class="grow name-wrapper">
@@ -73,5 +50,21 @@
       </form>
     </mat-card-content>
   </mat-card>
+  <h2>Players</h2>
+  <div>
+    <mat-card class="default-card">
+      <h3>Confirmed</h3>
+      <app-attendance-list [players]="details.confirmed"></app-attendance-list>
+    </mat-card>
+    <mat-card class="default-card">
+      <h3>Pending</h3>
+      <app-attendance-list [players]="details.pending"></app-attendance-list>
+    </mat-card>
+    <mat-card class="default-card">
+      <h3>Declined</h3>
+      <app-attendance-list [players]="details.declined"></app-attendance-list>
+    </mat-card>
+  </div>
+
 </div>
 

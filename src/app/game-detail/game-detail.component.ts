@@ -2,20 +2,19 @@ import {Component, OnInit} from '@angular/core';
 import {GameDetails, GamesService} from "../games.service";
 import {ActivatedRoute, Router} from "@angular/router";
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {Player, PlayerAttendance} from "../game-list/game-list.component";
 import {FormArray, FormBuilder, FormControl} from "@angular/forms";
 import {map, Observable, of, startWith, take} from "rxjs";
 import {MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
-import {DocumentReference} from "@angular/fire/compat/firestore";
+import {Player, PlayerAttendance} from "../game-list/game";
 
 export class PlayerControls {
   constructor(
     public a: PlayerAttendance,
     public player: Player,
-    public control: FormControl,
   ) {
   }
 }
+
 
 @Component({
   selector: 'app-game-detail',
@@ -30,7 +29,6 @@ export class GameDetailComponent implements OnInit {
   })
   isBusy = true
 
-  controls: PlayerControls[] = []
   hasChanges = false;
   addPlayer = this.fb.control('');
   addPlayerForm = this.fb.group({player: this.addPlayer})
@@ -55,18 +53,6 @@ export class GameDetailComponent implements OnInit {
       }
       this.details = d!;
 
-      this.controls = []
-      for (let i = 0; i < d!.game.players.length; i++){
-        const a = d!.game.players[i];
-
-        const control = new PlayerControls(
-          a,
-          d!.players.get(a)!,
-          this.fb.control(a.isConfirmed)
-        )
-        this.controls.push(control)
-        this.formArray.insert(i, control.control)
-      }
       this.getPlayers(d!)
       this.isBusy = false
     })
@@ -79,6 +65,20 @@ export class GameDetailComponent implements OnInit {
     }
 
     this.games.getPlayers().subscribe(players => {
+      for (const p of players) {
+        const a = pmap.get(p.id)!
+        switch (a.status) {
+          case "confirmed":
+            d.confirmed.push(p)
+            break
+          case "pending":
+            d.pending.push(p)
+            break
+          default:
+            d.declined.push(p)
+            break
+        }
+      }
       this.filteredOptions$ = this.addPlayer.valueChanges.pipe(
         startWith(''),
         map(value => {
@@ -100,7 +100,7 @@ export class GameDetailComponent implements OnInit {
   async createNewPlayer(playerName: string) {
     this.addPlayer.reset()
     const ref = await this.games.createPlayer(playerName)
-    this.details.game.players.push({isConfirmed: false, playerId: ref})
+    this.details.game.players.push({status: 'pending', playerId: ref})
     await this.games.update(this.details.game)
   }
 
@@ -117,11 +117,5 @@ export class GameDetailComponent implements OnInit {
 
   async deletePlayer(player: Player) {
     await this.games.deletePlayer(player)
-  }
-
-  async updateConfirmation(attendance: PlayerAttendance, value: boolean) {
-    attendance.isConfirmed = value
-    await this.games.update(this.details.game)
-
   }
 }

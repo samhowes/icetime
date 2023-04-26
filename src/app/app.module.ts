@@ -14,8 +14,9 @@ import {getFirestore, provideFirestore} from "@angular/fire/firestore";
 import {AngularFireModule} from "@angular/fire/compat";
 import {ReactiveFormsModule} from "@angular/forms";
 import { PlayerDetailsComponent } from './player-details/player-details.component';
-import { PlayerListComponent } from './player-list/player-list.component';
 import { EditGameComponent } from './edit-game/edit-game.component';
+import { AttendanceListComponent } from './game-detail/attendance-list/attendance-list.component';
+import {PlayerListComponent} from "./player-list/player-list.component";
 
 @NgModule({
   declarations: [
@@ -24,7 +25,8 @@ import { EditGameComponent } from './edit-game/edit-game.component';
     GameDetailComponent,
     PlayerDetailsComponent,
     PlayerListComponent,
-    EditGameComponent
+    EditGameComponent,
+    AttendanceListComponent,
   ],
   imports: [
     BrowserModule,
@@ -35,7 +37,7 @@ import { EditGameComponent } from './edit-game/edit-game.component';
     provideFirestore(() => getFirestore()),
     BrowserAnimationsModule,
     MaterialModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

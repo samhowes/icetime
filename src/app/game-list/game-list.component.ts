@@ -1,27 +1,10 @@
 import {Component, OnInit} from '@angular/core';
-import {of, tap} from "rxjs";
+import {tap} from "rxjs";
 import {Router} from "@angular/router";
 import {GamesService} from "../games.service";
-import {AngularFirestore, DocumentReference} from "@angular/fire/compat/firestore";
 import {MatDialog} from "@angular/material/dialog";
 import {EditGameComponent} from "../edit-game/edit-game.component";
-
-export interface Game {
-  id: string,
-  name: String,
-  players: PlayerAttendance[]
-}
-
-export interface PlayerAttendance {
-    isConfirmed: boolean,
-    playerId: DocumentReference
-}
-
-export interface Player {
-  id: string
-  name: string
-
-}
+import {Game} from "./game";
 
 @Component({
   selector: 'app-game-list',

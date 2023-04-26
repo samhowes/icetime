@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import {ActivatedRoute} from "@angular/router";
 import {GamesService} from "../games.service";
-import {Player} from "../game-list/game-list.component";
 import {FormBuilder, FormGroup} from "@angular/forms";
+import {Player} from "../game-list/game";
 
 @Component({
   selector: 'app-player-details',
