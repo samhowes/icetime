@@ -116,7 +116,7 @@ export class GamesService {
     const confirm = url + `?confirm=${player.id}`
 
     const email = {
-      to: ['sam@samhowes.com'],
+      to: [player.email],
       from: 'icetime@samhowes.com',
       message: {
         subject: `${game.manager.name} has invited you to Icetime: ${game.name}`,
