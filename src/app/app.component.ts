@@ -30,6 +30,7 @@ export class AppComponent {
 
   public signIn() {
     this.dialog.open(AuthDialogComponent, {
+      data: {message: 'Sign in to Icetime!'},
       disableClose: true
     }).afterClosed().subscribe(() => {
       this.notifications.info(`Welcome, ${this.auth.user!!.name}!`)
