@@ -13,6 +13,8 @@ import {MatMenuModule} from "@angular/material/menu";
 import {MatListModule} from "@angular/material/list";
 import {MatDialogModule} from "@angular/material/dialog";
 import {MatTooltipModule} from "@angular/material/tooltip";
+import {MatDatepickerModule} from "@angular/material/datepicker";
+import {MatMomentDateModule} from "@angular/material-moment-adapter";
 
 @NgModule({
   imports: [],
@@ -32,6 +34,8 @@ import {MatTooltipModule} from "@angular/material/tooltip";
     MatListModule,
     MatDialogModule,
     MatTooltipModule,
+    MatDatepickerModule,
+    MatMomentDateModule,
   ]
 })
 export class MaterialModule { }

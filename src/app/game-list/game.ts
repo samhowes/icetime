@@ -6,6 +6,9 @@ interface Manager {
 }
 
 export interface Game {
+  description: string;
+  date: string,
+  startTime: string,
   id: string,
   name: String,
   players: PlayerAttendance[],

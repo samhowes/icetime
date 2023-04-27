@@ -2,11 +2,33 @@
 
 <form [formGroup]="form" class="existing-form">
   <p>You will be assigned as the manager.</p>
-  <mat-form-field>
-    <mat-label>Name</mat-label>
-    <input matInput
-           formControlName="name">
-  </mat-form-field>
+  <div class="flex flex-col">
+
+    <mat-form-field>
+      <mat-label>Name</mat-label>
+      <input matInput
+             formControlName="name">
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="grow">
+      <mat-label>Date</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="date">
+      <mat-hint>MM/DD/YYYY</mat-hint>
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Start Time</mat-label>
+      <input matInput type="time" formControlName="startTime">
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Description</mat-label>
+      <textarea matInput type="textarea" formControlName="description"></textarea>
+    </mat-form-field>
+  </div>
+
 </form>
 
 <mat-dialog-actions>
@@ -16,10 +38,11 @@
       </button>
     </div>
     <button mat-raised-button color="primary"
-            [disabled]="!form.dirty"
+            [disabled]="!form.dirty || !form.valid"
             (click)="save()"
             type="submit"
-    >Save</button>
+    >Save
+    </button>
     <div class="flex justify-center align-middle items-center" *ngIf="isBusy">
       <mat-spinner [diameter]="25"></mat-spinner>
     </div>

@@ -4,6 +4,7 @@ import {AngularFirestore, AngularFirestoreCollection, DocumentReference} from "@
 import {Game, PlayerAttendance, Player} from "./game-list/game";
 import {AuthService} from "./auth.service";
 import {Notifications} from "./notifications.service";
+import * as moment from "moment";
 
 const idObj = {idField: 'id'}
 
@@ -12,9 +13,11 @@ export class GameDetails {
   confirmed: Player[] = [];
   pending: Player[] = [];
   declined: Player[] = []
+  date: moment.Moment;
   constructor(
     public game: Game
   ) {
+    this.date = moment(game.date)
   }
 }
 
@@ -84,7 +87,7 @@ export class GamesService {
   }
 
   async update(game: Game) {
-    await this._games.doc(game.id).set(game)
+    await this._games.doc(game.id).update(game)
   }
 
   getPlayer(id: string): Observable<Player|undefined> {
@@ -115,8 +118,13 @@ export class GamesService {
     const url = `${window.location.origin}/games/${game.id}`
     const confirm = url + `?confirm=${player.id}`
 
+    let to = player.email
+    if (url.includes("localhost")) {
+      to = 'sam@samhowes.com'
+    }
+
     const email = {
-      to: [player.email],
+      to: [to],
       from: 'icetime@samhowes.com',
       message: {
         subject: `${game.manager.name} has invited you to Icetime: ${game.name}`,

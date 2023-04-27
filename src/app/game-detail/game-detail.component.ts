@@ -8,6 +8,8 @@ import {MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
 import {Player, PlayerAttendance, RsvpStatus} from "../game-list/game";
 import {MatDialog} from "@angular/material/dialog";
 import {ConfirmAttendanceComponent, ConfirmAttendanceData} from "./confirm-attendance/confirm-attendance.component";
+import {AuthService} from "../auth.service";
+import {EditGameComponent, EditGameData} from "../edit-game/edit-game.component";
 
 export class PlayerControls {
   constructor(
@@ -40,6 +42,7 @@ export class GameDetailComponent implements OnInit {
   autoCompleteDisplay = (player: any) => (player || {} as Player).name ? (player as Player).name : player;
   currentPlayer: Player|null = null;
   currentAttendance: PlayerAttendance|null = null;
+  canManage = false;
 
   constructor(
     private games: GamesService,
@@ -48,6 +51,7 @@ export class GameDetailComponent implements OnInit {
     private snackbar: MatSnackBar,
     private fb: FormBuilder,
     private dialog: MatDialog,
+    private auth: AuthService,
   ) {
     const id = this.route.snapshot.paramMap.get("id")
     this.games.getDetails(id!).subscribe(d => {
@@ -57,16 +61,16 @@ export class GameDetailComponent implements OnInit {
         return
       }
       this.details = d!;
+      if (d?.game.manager.userId === this.auth.user?.userInfo.uid) {
+        this.canManage = true
+      }
       const queryMap = this.route.snapshot.queryParamMap
       const confirm = queryMap.get('confirm')
       const decline = queryMap.get('decline')
 
-
       this.getPlayers(d!, confirm)
       this.isBusy = false
     })
-
-
   }
 
   private getPlayers(d: GameDetails, currentPlayerId: string|null) {
@@ -145,5 +149,11 @@ export class GameDetailComponent implements OnInit {
   async rsvp(attendance: PlayerAttendance, status: RsvpStatus) {
     attendance.status = status
     await this.games.update(this.details.game)
+  }
+
+  editGame() {
+    this.dialog.open(EditGameComponent, {
+      data: new EditGameData(this.details.game, false),
+    })
   }
 }

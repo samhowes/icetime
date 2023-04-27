@@ -3,7 +3,7 @@ import {tap} from "rxjs";
 import {Router} from "@angular/router";
 import {GamesService} from "../games.service";
 import {MatDialog} from "@angular/material/dialog";
-import {EditGameComponent} from "../edit-game/edit-game.component";
+import {EditGameComponent, EditGameData} from "../edit-game/edit-game.component";
 import {Game} from "./game";
 import {AuthService} from "../auth.service";
 
@@ -43,7 +43,7 @@ export class GameListComponent implements OnInit {
   private editGame() {
     const ref = this.dialog.open(EditGameComponent, {
       minWidth: '300px',
-      data: {} as Game
+      data: new EditGameData({} as Game, true)
     })
     ref.afterClosed().subscribe(res => {
       if (!res) return

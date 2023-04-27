@@ -57,3 +57,8 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 mat-card.default-card {
   margin: 5px;
 }
+
+
+.mat-dialog-container {
+  max-width: 600px;
+}
