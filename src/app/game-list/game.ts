@@ -1,13 +1,20 @@
 import {DocumentReference} from "@angular/fire/compat/firestore";
 
+interface Manager {
+  userId: string,
+  name: string
+}
+
 export interface Game {
   id: string,
   name: String,
-  players: PlayerAttendance[]
+  players: PlayerAttendance[],
+  manager: Manager
 }
 
+export type RsvpStatus = 'pending'|'confirmed'|'declined'
 export interface PlayerAttendance {
-  status: 'pending'|'confirmed'|'declined',
+  status: RsvpStatus,
   playerId: DocumentReference
 }
 

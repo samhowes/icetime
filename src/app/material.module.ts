@@ -12,6 +12,7 @@ import {MatInputModule} from "@angular/material/input";
 import {MatMenuModule} from "@angular/material/menu";
 import {MatListModule} from "@angular/material/list";
 import {MatDialogModule} from "@angular/material/dialog";
+import {MatTooltipModule} from "@angular/material/tooltip";
 
 @NgModule({
   imports: [],
@@ -30,6 +31,7 @@ import {MatDialogModule} from "@angular/material/dialog";
     MatMenuModule,
     MatListModule,
     MatDialogModule,
+    MatTooltipModule,
   ]
 })
 export class MaterialModule { }

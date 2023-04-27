@@ -2,10 +2,12 @@ import {Component, OnInit} from '@angular/core';
 import {GameDetails, GamesService} from "../games.service";
 import {ActivatedRoute, Router} from "@angular/router";
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {FormArray, FormBuilder, FormControl} from "@angular/forms";
+import {FormArray, FormBuilder} from "@angular/forms";
 import {map, Observable, of, startWith, take} from "rxjs";
 import {MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
-import {Player, PlayerAttendance} from "../game-list/game";
+import {Player, PlayerAttendance, RsvpStatus} from "../game-list/game";
+import {MatDialog} from "@angular/material/dialog";
+import {ConfirmAttendanceComponent, ConfirmAttendanceData} from "./confirm-attendance/confirm-attendance.component";
 
 export class PlayerControls {
   constructor(
@@ -36,6 +38,8 @@ export class GameDetailComponent implements OnInit {
 
   players$ = this.games.players$
   autoCompleteDisplay = (player: any) => (player || {} as Player).name ? (player as Player).name : player;
+  currentPlayer: Player|null = null;
+  currentAttendance: PlayerAttendance|null = null;
 
   constructor(
     private games: GamesService,
@@ -43,6 +47,7 @@ export class GameDetailComponent implements OnInit {
     private router: Router,
     private snackbar: MatSnackBar,
     private fb: FormBuilder,
+    private dialog: MatDialog,
   ) {
     const id = this.route.snapshot.paramMap.get("id")
     this.games.getDetails(id!).subscribe(d => {
@@ -52,13 +57,19 @@ export class GameDetailComponent implements OnInit {
         return
       }
       this.details = d!;
+      const queryMap = this.route.snapshot.queryParamMap
+      const confirm = queryMap.get('confirm')
+      const decline = queryMap.get('decline')
 
-      this.getPlayers(d!)
+
+      this.getPlayers(d!, confirm)
       this.isBusy = false
     })
+
+
   }
 
-  private getPlayers(d: GameDetails) {
+  private getPlayers(d: GameDetails, currentPlayerId: string|null) {
     const pmap = new Map<string, PlayerAttendance>()
     for (const player of d.game.players) {
       pmap.set(player.playerId.id, player)
@@ -67,6 +78,11 @@ export class GameDetailComponent implements OnInit {
     this.games.getPlayers().subscribe(players => {
       for (const p of players) {
         const a = pmap.get(p.id)!
+        if (!a) continue
+        if (p.id === currentPlayerId) {
+          this.currentPlayer = p
+          this.currentAttendance = a;
+        }
         switch (a.status) {
           case "confirmed":
             d.confirmed.push(p)
@@ -105,7 +121,6 @@ export class GameDetailComponent implements OnInit {
   }
 
   async addPlayerToGame(player: Player) {
-    console.log(player)
     await this.games.addPlayer(this.details.game, player)
   }
 
@@ -117,5 +132,18 @@ export class GameDetailComponent implements OnInit {
 
   async deletePlayer(player: Player) {
     await this.games.deletePlayer(player)
+  }
+
+  async confirmAttendance(attendance: PlayerAttendance) {
+    await this.rsvp(attendance, 'confirmed')
+  }
+
+  async declineAttendance(attendance: PlayerAttendance) {
+    await this.rsvp(attendance, 'declined')
+  }
+
+  async rsvp(attendance: PlayerAttendance, status: RsvpStatus) {
+    attendance.status = status
+    await this.games.update(this.details.game)
   }
 }

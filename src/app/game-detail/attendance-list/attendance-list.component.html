@@ -6,7 +6,8 @@
     </button>
     <mat-menu #menu="matMenu">
       <button mat-menu-item [routerLink]="['/players', player.id]">Go to details</button>
-      <button mat-menu-item>Remove</button>
+      <button mat-menu-item (click)="resendInvite(player)">Resend Invite Email</button>
+      <button mat-menu-item (click)="removePlayer(player)">Remove</button>
     </mat-menu>
   </div>
 </ng-container>

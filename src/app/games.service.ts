@@ -2,6 +2,8 @@ import {Injectable} from '@angular/core';
 import {filter, map, Observable, of, share, shareReplay, switchMap, tap} from "rxjs";
 import {AngularFirestore, AngularFirestoreCollection, DocumentReference} from "@angular/fire/compat/firestore";
 import {Game, PlayerAttendance, Player} from "./game-list/game";
+import {AuthService} from "./auth.service";
+import {Notifications} from "./notifications.service";
 
 const idObj = {idField: 'id'}
 
@@ -29,7 +31,9 @@ export class GamesService {
       shareReplay(1))
 
   constructor(
-    private db: AngularFirestore
+    private db: AngularFirestore,
+    private auth: AuthService,
+    private notifications: Notifications,
   ) {
   }
 
@@ -80,7 +84,7 @@ export class GamesService {
   }
 
   async update(game: Game) {
-    await this.db.collection('games').doc(game.id).set(game)
+    await this._games.doc(game.id).set(game)
   }
 
   getPlayer(id: string): Observable<Player|undefined> {
@@ -100,20 +104,34 @@ export class GamesService {
     const doc = this._players.doc(player.id)
     game.players.push({status: 'pending', playerId: doc.ref})
     await this._games.doc(game.id).set(game)
+    await this.invitePlayer(game, player)
   }
 
-  async invitePlayer() {
-    console.log('what')
+  async invitePlayer(game: Game, player: Player) {
+    if (this.auth.user?.userInfo.uid != game.manager.userId) {
+      this.notifications.info("Only the game manager can send invites")
+      return
+    }
+    const url = `${window.location.origin}/games/${game.id}`
+    const confirm = url + `?confirm=${player.id}`
+
     const email = {
       to: ['sam@samhowes.com'],
       from: 'icetime@samhowes.com',
       message: {
-        subject: 'Hello from Firebase!',
-        text: 'This is the plaintext section of the email body.',
-        html: 'This is the <code>HTML</code> section of the email body.',
+        subject: `${game.manager.name} has invited you to Icetime: ${game.name}`,
+        html: `<p>Click the following link or paste it into your browser to confirm or decline your
+availability: <a href="${confirm}">${confirm}</a></p>`,
       }
     }
     const ref = await this.db.collection('mail').add(email)
     console.log(ref.id)
+  }
+
+  async removePlayer(game: Game, player: Player) {
+    const a = game.players.findIndex(a => a.playerId.id === player.id)
+    if (a < 0) console.error("Player not added to game", game, player)
+    game.players.splice(a, 1)
+    await this._games.doc(game.id).set(game)
   }
 }

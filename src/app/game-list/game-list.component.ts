@@ -5,6 +5,7 @@ import {GamesService} from "../games.service";
 import {MatDialog} from "@angular/material/dialog";
 import {EditGameComponent} from "../edit-game/edit-game.component";
 import {Game} from "./game";
+import {AuthService} from "../auth.service";
 
 @Component({
   selector: 'app-game-list',
@@ -21,6 +22,7 @@ export class GameListComponent implements OnInit {
     private router: Router,
     private games: GamesService,
     private dialog: MatDialog,
+    private auth: AuthService,
   ) {
   }
 
@@ -28,9 +30,21 @@ export class GameListComponent implements OnInit {
   }
 
   createGame() {
+    if (!this.auth.user) {
+      this.auth.showSignIn('Sign in to Create a Game')
+        .subscribe(() => this.editGame())
+    }
+    else {
+      this.editGame();
+    }
+
+  }
+
+  private editGame() {
     const ref = this.dialog.open(EditGameComponent, {
       minWidth: '300px',
-      data: {} as Game})
+      data: {} as Game
+    })
     ref.afterClosed().subscribe(res => {
       if (!res) return
       const game = res as Game

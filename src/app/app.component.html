@@ -3,6 +3,29 @@
     <a routerLink="/games" class="grow"><span>Icetime</span></a>
     <a routerLink="/games"><span>Games</span></a>
     <a routerLink="/players" class="spaced"><span>Players</span></a>
+    <button mat-icon-button
+            [matMenuTriggerFor]="accountMenu"
+    >
+      <mat-icon>account_circle</mat-icon>
+    </button>
+
+
+    <mat-menu #accountMenu="matMenu">
+      <button mat-menu-item *ngIf="!auth.user"
+              (click)="signIn()">
+        <mat-icon>login</mat-icon>
+        <span>Sign In</span>
+      </button>
+      <ng-container *ngIf="auth.user">
+        <button mat-menu-item disabled="true">
+          Hello, {{auth.user.name}}!
+        </button>
+        <button mat-menu-item (click)="signOut()">
+          <mat-icon>logout</mat-icon>
+          <span>Sign Out</span>
+        </button>
+      </ng-container>
+    </mat-menu>
   </mat-toolbar>
 </p>
 

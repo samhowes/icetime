@@ -10,16 +10,45 @@
   <mat-spinner></mat-spinner>
 </div>
 <div *ngIf="!isBusy">
+  <mat-card class="default-card rsvp-card" *ngIf="currentAttendance">
+    <div class="flex flex-row">
+      <h2 class="grow">Your RSVP</h2>
+      <button mat-mini-fab
+              matTooltip="Reset RSVP"
+              matTooltipShowDelay="500"
+              *ngIf="currentAttendance.status !== 'pending'"
+              (click)="rsvp(currentAttendance, 'pending')"
+      ><mat-icon>undo</mat-icon></button>
+    </div>
+
+    <div class="flex flex-col">
+      <button mat-raised-button color="primary" class="rsvp-button"
+              (click)="confirmAttendance(currentAttendance)"
+              [disabled]="currentAttendance.status != 'pending'"
+      >
+        <mat-icon *ngIf="currentAttendance.status === 'confirmed'">check</mat-icon>
+        CONFIRM
+      </button>
+      <button mat-raised-button color="warn"
+              [disabled]="currentAttendance.status != 'pending'"
+              (click)="declineAttendance(currentAttendance)">
+        <mat-icon *ngIf="currentAttendance.status === 'declined'">check</mat-icon>
+
+        DECLINE</button>
+    </div>
+
+  </mat-card>
+
   <mat-card class="default-card">
     <mat-card-header>
       <mat-card-title class="block">
         <div class="flex flex-row">
           <span class="grow">{{details.game.name}}</span>
-          <!--          <button mat-raised-button [disabled]="!form.dirty" color="primary">Save</button>-->
         </div>
       </mat-card-title>
     </mat-card-header>
     <mat-card-content>
+      <p>Managed by: {{details.game.manager.name}}</p>
       <form [formGroup]="addPlayerForm">
         <div class="flex flex-row">
           <div class="grow name-wrapper">
@@ -54,15 +83,15 @@
   <div>
     <mat-card class="default-card">
       <h3>Confirmed</h3>
-      <app-attendance-list [players]="details.confirmed"></app-attendance-list>
+      <app-attendance-list [players]="details.confirmed" [game]="details.game"></app-attendance-list>
     </mat-card>
     <mat-card class="default-card">
       <h3>Pending</h3>
-      <app-attendance-list [players]="details.pending"></app-attendance-list>
+      <app-attendance-list [players]="details.pending"[game]="details.game"></app-attendance-list>
     </mat-card>
     <mat-card class="default-card">
       <h3>Declined</h3>
-      <app-attendance-list [players]="details.declined"></app-attendance-list>
+      <app-attendance-list [players]="details.declined" [game]="details.game"></app-attendance-list>
     </mat-card>
   </div>
 

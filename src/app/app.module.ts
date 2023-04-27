@@ -17,6 +17,8 @@ import { PlayerDetailsComponent } from './player-details/player-details.componen
 import { EditGameComponent } from './edit-game/edit-game.component';
 import { AttendanceListComponent } from './game-detail/attendance-list/attendance-list.component';
 import {PlayerListComponent} from "./player-list/player-list.component";
+import { AuthDialogComponent } from './auth-dialog/auth-dialog.component';
+import { ConfirmAttendanceComponent } from './game-detail/confirm-attendance/confirm-attendance.component';
 
 @NgModule({
   declarations: [
@@ -27,6 +29,8 @@ import {PlayerListComponent} from "./player-list/player-list.component";
     PlayerListComponent,
     EditGameComponent,
     AttendanceListComponent,
+    AuthDialogComponent,
+    ConfirmAttendanceComponent,
   ],
   imports: [
     BrowserModule,
