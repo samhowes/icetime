@@ -8,11 +8,13 @@ import {
   GoogleAuthProvider,
   UserCredential
 } from "firebase/auth";
-import {from, Observable, Subject, tap} from "rxjs";
+import {from, Observable, Subject, take, tap} from "rxjs";
 import {Notifications} from "./notifications.service";
 import {Auth} from "@angular/fire/auth";
 import {AuthDialogComponent} from "./auth-dialog/auth-dialog.component";
 import {MatDialog} from "@angular/material/dialog";
+import {AngularFirestore, AngularFirestoreDocument} from "@angular/fire/compat/firestore";
+import {Player} from "./game-list/game";
 
 export interface AuthResult {
   user: UserInfo,
@@ -26,11 +28,13 @@ export class AppUserInfo {
     Object.assign(user, JSON.parse(str))
     return user
   }
+
   public name: string;
+
   constructor(
     public userInfo: UserInfo
   ) {
-    this.name = (userInfo.displayName || "Anonymous").split(' ')[0]
+    this.name = userInfo.displayName!
   }
 }
 
@@ -39,6 +43,7 @@ export class AppUserInfo {
 })
 export class Firebase {
   ui = new firebaseUiAuth.AuthUI(this.auth)
+
   constructor(
     public auth: Auth
   ) {
@@ -58,6 +63,7 @@ export class AuthService {
     private notifications: Notifications,
     private firebase: Firebase,
     private dialog: MatDialog,
+    private db: AngularFirestore,
   ) {
     try {
       const authStr = localStorage.getItem(AuthService.storageKey)
@@ -116,13 +122,41 @@ export class AuthService {
 
   private finishSignIn(user: UserInfo) {
     this.user = new AppUserInfo(user)
+
+    const doc = this.db.collection<Player>('players', ref => ref
+      .where('id', '==', this.user!.userInfo.uid))
+    doc
+      .valueChanges()
+      .pipe(take(1))
+      .subscribe(value => {
+        if (value.length == 0) {
+          this.db.collection<Player>('players', (q) =>
+            q.where('email', '==', this.user!.userInfo.email))
+            .valueChanges({idField: 'id'})
+            .pipe(take(1))
+            .subscribe(players => {
+              if (players.length > 1) {
+                this.notifications.error('Found multiple players with your email, please contact sam@samhowes.com')
+              }
+              if (players.length) {
+                this.updateProfile(players[0], players[0].id)
+              }
+              else this.updateProfile({} as Player, this.user!.userInfo.uid!)
+            })
+        } else {
+          this.updateProfile(value[0], value[0].id);
+        }
+
+      })
     localStorage.setItem(AuthService.storageKey, JSON.stringify(this.user))
   }
 
-  anonymousSignIn(): Observable<any> {
-    return from(signInAnonymously(this.firebase!!.auth))
-      .pipe(
-        tap((credential: UserCredential) => this.finishSignIn(credential.user)))
+  private updateProfile(player: Player, id: string) {
+    player.name = this.user!.name
+    player.email = this.user!.userInfo.email!
+    player.claimed = true
+    this.db.collection<Player>('players').doc(id)
+      .set(player, {merge: true}).then(() => console.log('updated profile'))
   }
 
   signOut(): Observable<any> {

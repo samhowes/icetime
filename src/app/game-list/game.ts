@@ -22,6 +22,7 @@ export interface PlayerAttendance {
 }
 
 export interface Player {
+  claimed: boolean;
   id: string
   name: string
   email: string
