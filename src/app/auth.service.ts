@@ -8,13 +8,13 @@ import {
   GoogleAuthProvider,
   UserCredential
 } from "firebase/auth";
-import {from, Observable, Subject, take, tap} from "rxjs";
+import {firstValueFrom, from, Observable, Subject, take, tap} from "rxjs";
 import {Notifications} from "./notifications.service";
 import {Auth} from "@angular/fire/auth";
 import {AuthDialogComponent} from "./auth-dialog/auth-dialog.component";
 import {MatDialog} from "@angular/material/dialog";
 import {AngularFirestore, AngularFirestoreDocument} from "@angular/fire/compat/firestore";
-import {Player} from "./game-list/game";
+import {Player, PlayerAttendance} from "./game-list/game";
 
 export interface AuthResult {
   user: UserInfo,
@@ -94,7 +94,7 @@ export class AuthService {
           // User successfully signed in.
           // Return type determines whether we continue the redirect automatically
           // or whether we leave that to developer to handle.
-          this.finishSignIn(authResult.user);
+          this.finishSignIn(authResult.user).then();
           obs.next(true)
           return false; // don't redirect: assume we're in a modal
         },
@@ -120,7 +120,7 @@ export class AuthService {
     return obs
   }
 
-  private finishSignIn(user: UserInfo) {
+  private async finishSignIn(user: UserInfo) {
     this.user = new AppUserInfo(user)
 
     const doc = this.db.collection<Player>('players', ref => ref
@@ -139,29 +139,45 @@ export class AuthService {
                 this.notifications.error('Found multiple players with your email, please contact sam@samhowes.com')
               }
               if (players.length) {
-                this.updateProfile(players[0], players[0].id)
+                 this.migratePlayerToUser(players[0], this.user!.userInfo.uid).then()
               }
-              else this.updateProfile({} as Player, this.user!.userInfo.uid!)
+              else this.updateProfile({} as Player, this.user!.userInfo.uid!).then()
             })
         } else {
-          this.updateProfile(value[0], value[0].id);
+          this.updateProfile(value[0], value[0].id).then();
         }
 
       })
     localStorage.setItem(AuthService.storageKey, JSON.stringify(this.user))
   }
 
-  private updateProfile(player: Player, id: string) {
+  private async updateProfile(player: Player, id: string) {
+    player.id = id
     player.name = this.user!.name
     player.email = this.user!.userInfo.email!
     player.claimed = true
-    this.db.collection<Player>('players').doc(id)
-      .set(player, {merge: true}).then(() => console.log('updated profile'))
+    await this.db.collection<Player>('players').doc(id)
+      .set(player, {merge: true})
   }
 
   signOut(): Observable<any> {
     localStorage.removeItem(AuthService.storageKey)
     this.user = undefined
     return from(signOut(this.firebase!!.auth))
+  }
+
+  private async migratePlayerToUser(player: Player, uid: string) {
+    const rsvps = await firstValueFrom(this.db.collection<PlayerAttendance>('rsvp', ref =>
+      ref.where('playerId',  '==', player.id))
+      .valueChanges({idField: 'id'}))
+
+    for (const rsvp of rsvps) {
+      rsvp.playerId = uid
+      await this.db.collection<PlayerAttendance>('rsvp').doc(rsvp.id).update(rsvp)
+    }
+
+    await this.db.collection<Player>('players').doc(player.id).delete()
+    await this.updateProfile(player, uid)
+    location.reload()
   }
 }

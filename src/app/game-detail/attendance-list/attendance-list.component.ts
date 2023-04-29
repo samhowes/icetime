@@ -1,6 +1,7 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {Game, Player} from "../../game-list/game";
 import {GamesService} from "../../games.service";
+import {GamePlayer} from "../game-detail.component";
 
 @Component({
   selector: 'app-attendance-list',
@@ -8,7 +9,7 @@ import {GamesService} from "../../games.service";
   styleUrls: ['./attendance-list.component.scss']
 })
 export class AttendanceListComponent implements OnInit {
-  @Input('players') players: Player[] = []
+  @Input('players') players: GamePlayer[] = []
   @Input('game') game: Game = {} as Game
   constructor(
     private games: GamesService
@@ -17,11 +18,11 @@ export class AttendanceListComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  async removePlayer(player: Player) {
-    await this.games.removePlayer(this.game, player)
+  async removePlayer(player: GamePlayer) {
+    await this.games.removePlayer(player.rsvp)
   }
 
-  async resendInvite(player: Player) {
-    await this.games.invitePlayer(this.game, player)
+  async resendInvite(player: GamePlayer) {
+    await this.games.invitePlayer(this.game, player.player, player.rsvp.id)
   }
 }

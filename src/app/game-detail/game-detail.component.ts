@@ -3,22 +3,29 @@ import {GameDetails, GamesService} from "../games.service";
 import {ActivatedRoute, Router} from "@angular/router";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {FormArray, FormBuilder} from "@angular/forms";
-import {map, Observable, of, startWith, take} from "rxjs";
+import {combineLatest, combineLatestWith, debounce, map, Observable, of, startWith, take, tap} from "rxjs";
 import {MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
 import {Player, PlayerAttendance, RsvpStatus} from "../game-list/game";
 import {MatDialog} from "@angular/material/dialog";
-import {ConfirmAttendanceComponent, ConfirmAttendanceData} from "./confirm-attendance/confirm-attendance.component";
 import {AuthService} from "../auth.service";
 import {EditGameComponent, EditGameData} from "../edit-game/edit-game.component";
 
-export class PlayerControls {
+
+export class GamePlayer {
   constructor(
-    public a: PlayerAttendance,
     public player: Player,
+    public rsvp: PlayerAttendance
   ) {
   }
 }
 
+export class PlayerGroupings {
+  map: Map<string, Player> = new Map<string, Player>()
+  confirmed: GamePlayer[] = [];
+  pending: GamePlayer[] = [];
+  declined: GamePlayer[] = []
+  rsvps: Map<string, PlayerAttendance> = new Map<string, PlayerAttendance>();
+}
 
 @Component({
   selector: 'app-game-detail',
@@ -40,9 +47,11 @@ export class GameDetailComponent implements OnInit {
 
   players$ = this.games.players$
   autoCompleteDisplay = (player: any) => (player || {} as Player).name ? (player as Player).name : player;
-  currentPlayer: Player|null = null;
-  currentAttendance: PlayerAttendance|null = null;
+  currentPlayer: Player | null = null;
+  currentAttendance: GamePlayer | null = null;
   canManage = false;
+
+  groupings = new PlayerGroupings()
 
   constructor(
     private games: GamesService,
@@ -53,10 +62,10 @@ export class GameDetailComponent implements OnInit {
     private dialog: MatDialog,
     private auth: AuthService,
   ) {
-    const id = this.route.snapshot.paramMap.get("id")
-    this.games.getDetails(id!).subscribe(d => {
+    const gameId = this.route.snapshot.paramMap.get("id")
+    this.games.getDetails(gameId!).subscribe(d => {
       if (d === null) {
-        this.snackbar.open(`Game id ${id} not found`, "OK")
+        this.snackbar.open(`Game id ${gameId} not found`, "OK")
         this.router.navigate(["/games"]).then()
         return
       }
@@ -64,64 +73,84 @@ export class GameDetailComponent implements OnInit {
       if (d?.game.manager.userId === this.auth.user?.userInfo.uid) {
         this.canManage = true
       }
-      const queryMap = this.route.snapshot.queryParamMap
-      const confirm = queryMap.get('confirm')
-      const decline = queryMap.get('decline')
-
-      this.getPlayers(d!, confirm)
       this.isBusy = false
     })
+
+    const queryMap = this.route.snapshot.queryParamMap
+    const confirm = queryMap.get('confirm')
+
+    this.games.getPlayers().pipe(
+      tap((players) => {
+        this.groupings.map = new Map<string, Player>()
+        for (const player of players) {
+          this.groupings.map.set(player.id, player)
+        }
+      }),
+      combineLatestWith(this.games.getRsvps(gameId!).pipe(tap(rsvps => {
+        this.groupings.rsvps = new Map<string, PlayerAttendance>()
+        for (const r of rsvps) {
+          this.groupings.rsvps.set(r.playerId, r)
+        }
+      }))),
+      map(([players, rsvps]) => {
+        this.filterPlayers(players)
+        this.groupings.pending = []
+          this.groupings.confirmed = []
+          this.groupings.declined = []
+          for (const rsvp of rsvps) {
+            let list: GamePlayer[]
+            switch (rsvp.status) {
+              case 'pending':
+                list = this.groupings.pending
+                break;
+              case 'confirmed':
+                list = this.groupings.confirmed
+                break;
+              default:
+              case 'declined':
+                list = this.groupings.declined
+                break;
+            }
+            const player = this.groupings.map.get(rsvp.playerId)
+            if (!player) throw new Error(`no player matched for rsvp: ${rsvp.id}`)
+
+            const gamePlayer = new GamePlayer(player, rsvp)
+            if (rsvp.id === confirm || rsvp.playerId === this.auth.user?.userInfo.uid) {
+              this.currentAttendance = gamePlayer
+            }
+            list.push(gamePlayer)
+          }
+        }
+      )).subscribe()
+
+    this.games.getRsvps(gameId!).subscribe()
   }
 
-  private getPlayers(d: GameDetails, currentPlayerId: string|null) {
-    const pmap = new Map<string, PlayerAttendance>()
-    for (const player of d.game.players) {
-      pmap.set(player.playerId.id, player)
-    }
-
-    this.games.getPlayers().subscribe(players => {
-      for (const p of players) {
-        const a = pmap.get(p.id)!
-        if (!a) continue
-        if (p.id === currentPlayerId) {
-          this.currentPlayer = p
-          this.currentAttendance = a;
+  private filterPlayers(players: Player[]) {
+    this.filteredOptions$ = this.addPlayer.valueChanges.pipe(
+      startWith(''),
+      map(value => {
+        if (value == null) {
+          return players.filter(p => !this.groupings.rsvps.has(p.id))
         }
-        switch (a.status) {
-          case "confirmed":
-            d.confirmed.push(p)
-            break
-          case "pending":
-            d.pending.push(p)
-            break
-          default:
-            d.declined.push(p)
-            break
-        }
-      }
-      this.filteredOptions$ = this.addPlayer.valueChanges.pipe(
-        startWith(''),
-        map(value => {
-          if (value == null) return players.filter(p => !pmap.has(p.id))
-          if (!value.toLowerCase) return []
-          const lower = value.toLowerCase()
-          return players.filter(p => {
-            if (pmap.has(p.id)) return false
-            return p.name.toLowerCase().includes(lower);
-          })
+        if (!value.toLowerCase) return []
+        const lower = value.toLowerCase()
+        return players.filter(p => {
+          if (this.groupings.rsvps.has(p.id)) return false
+          return p.name.toLowerCase().includes(lower);
         })
-      )
-    })
+      })
+    )
   }
 
   ngOnInit(): void {
   }
 
   async createNewPlayer(playerName: string) {
+    console.log('createNewPlayer', playerName)
     this.addPlayer.reset()
-    const ref = await this.games.createPlayer(playerName)
-    this.details.game.players.push({status: 'pending', playerId: ref})
-    await this.games.update(this.details.game)
+    const player = await this.games.createPlayer(playerName)
+    await this.games.addPlayer(this.details.game, player)
   }
 
   async addPlayerToGame(player: Player) {
@@ -130,6 +159,7 @@ export class GameDetailComponent implements OnInit {
 
   async selectPlayer($event: MatAutocompleteSelectedEvent) {
     const player = $event.option.value as Player
+    console.log('selectPlayer', player)
     this.addPlayer.reset()
     await this.addPlayerToGame(player)
   }
@@ -148,7 +178,7 @@ export class GameDetailComponent implements OnInit {
 
   async rsvp(attendance: PlayerAttendance, status: RsvpStatus) {
     attendance.status = status
-    await this.games.update(this.details.game)
+    await this.games.updateRsvp(attendance)
   }
 
   editGame() {

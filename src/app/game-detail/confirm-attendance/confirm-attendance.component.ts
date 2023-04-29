@@ -1,16 +1,14 @@
-import {Component, Inject, inject, OnInit} from '@angular/core';
-import {Game, Player, PlayerAttendance} from "../../game-list/game";
+import {Component, Inject, OnInit} from '@angular/core';
+import {Game} from "../../game-list/game";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {GamesService} from "../../games.service";
+import {GamePlayer} from "../game-detail.component";
 
 export class ConfirmAttendanceData {
-  public attendance: PlayerAttendance;
   constructor(
     public game: Game,
-    public playerId: string,
+    public gamePlayer: GamePlayer,
   ) {
-    const index = game.players.findIndex(p => p.playerId.id === playerId)
-    this.attendance = this.game.players[index]
   }
 }
 
@@ -31,12 +29,12 @@ export class ConfirmAttendanceComponent implements OnInit {
   }
 
   async confirm() {
-    this.data.attendance.status = 'confirmed'
+    this.data.gamePlayer.rsvp.status = 'confirmed'
     await this.save()
   }
 
   async decline() {
-    this.data.attendance.status = 'declined'
+    this.data.gamePlayer.rsvp.status = 'declined'
     await this.save()
   }
 

@@ -54,8 +54,6 @@ export class EditGameComponent implements OnInit {
       name: this.auth.user!.name,
       userId: this.auth.user!.userInfo.uid
     }
-    game.players = []
-    console.log(this.data)
     if (this.data.isCreate) {
       await this.games.createGame(game)
     } else {

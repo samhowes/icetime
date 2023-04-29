@@ -11,30 +11,22 @@
 </div>
 <div *ngIf="!isBusy">
   <mat-card class="default-card rsvp-card" *ngIf="currentAttendance">
-    <div class="flex flex-row">
-      <h2 class="grow">Your RSVP</h2>
+    <div class="flex flex-row items-center">
+      <h2 class="grow no-margin">Your RSVP: {{currentAttendance.rsvp.status.toUpperCase()}}</h2>
       <button mat-mini-fab
-              matTooltip="Reset RSVP"
-              matTooltipShowDelay="500"
-              *ngIf="currentAttendance.status !== 'pending'"
-              (click)="rsvp(currentAttendance, 'pending')"
-      ><mat-icon>undo</mat-icon></button>
+              *ngIf="currentAttendance.rsvp.status !== 'pending'"
+              (click)="rsvp(currentAttendance.rsvp, 'pending')"
+      >
+        <mat-icon>undo</mat-icon>
+      </button>
     </div>
 
-    <div class="flex flex-col">
+    <div class="flex flex-col" *ngIf="currentAttendance.rsvp.status === 'pending'">
       <button mat-raised-button color="primary" class="rsvp-button"
-              (click)="confirmAttendance(currentAttendance)"
-              [disabled]="currentAttendance.status != 'pending'"
-      >
-        <mat-icon *ngIf="currentAttendance.status === 'confirmed'">check</mat-icon>
-        CONFIRM
+              (click)="confirmAttendance(currentAttendance.rsvp)"
+      >CONFIRM
       </button>
-      <button mat-raised-button color="warn"
-              [disabled]="currentAttendance.status != 'pending'"
-              (click)="declineAttendance(currentAttendance)">
-        <mat-icon *ngIf="currentAttendance.status === 'declined'">check</mat-icon>
-
-        DECLINE</button>
+      <button mat-raised-button color="warn" (click)="declineAttendance(currentAttendance.rsvp)">DECLINE</button>
     </div>
 
   </mat-card>
@@ -42,12 +34,14 @@
   <mat-card class="default-card">
     <mat-card-header>
       <mat-card-title class="block">
-        <div class="flex flex-row">
-          <span class="grow">{{details.game.name}}</span>
+        <div class="flex flex-row items-center">
+          <h2 class="grow no-margin">{{details.game.name}}</h2>
           <button mat-mini-fab
                   *ngIf="canManage"
                   (click)="editGame()"
-          ><mat-icon>edit</mat-icon></button>
+          >
+            <mat-icon>edit</mat-icon>
+          </button>
         </div>
       </mat-card-title>
     </mat-card-header>
@@ -93,15 +87,15 @@
   <div>
     <mat-card class="default-card">
       <h3>Confirmed</h3>
-      <app-attendance-list [players]="details.confirmed" [game]="details.game"></app-attendance-list>
+      <app-attendance-list [players]="groupings.confirmed" [game]="details.game"></app-attendance-list>
     </mat-card>
     <mat-card class="default-card">
       <h3>Pending</h3>
-      <app-attendance-list [players]="details.pending"[game]="details.game"></app-attendance-list>
+      <app-attendance-list [players]="groupings.pending" [game]="details.game"></app-attendance-list>
     </mat-card>
     <mat-card class="default-card">
       <h3>Declined</h3>
-      <app-attendance-list [players]="details.declined" [game]="details.game"></app-attendance-list>
+      <app-attendance-list [players]="groupings.declined" [game]="details.game"></app-attendance-list>
     </mat-card>
   </div>
 

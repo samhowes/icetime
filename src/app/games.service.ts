@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
-import {filter, map, Observable, of, share, shareReplay, switchMap, tap} from "rxjs";
+import {map, Observable, of, shareReplay, switchMap, tap} from "rxjs";
 import {AngularFirestore, AngularFirestoreCollection, DocumentReference} from "@angular/fire/compat/firestore";
-import {Game, PlayerAttendance, Player} from "./game-list/game";
+import {Game, Player, PlayerAttendance} from "./game-list/game";
 import {AuthService} from "./auth.service";
 import {Notifications} from "./notifications.service";
 import * as moment from "moment";
@@ -9,10 +9,6 @@ import * as moment from "moment";
 const idObj = {idField: 'id'}
 
 export class GameDetails {
-  players = new Map<PlayerAttendance, Player>();
-  confirmed: Player[] = [];
-  pending: Player[] = [];
-  declined: Player[] = []
   date: moment.Moment;
   constructor(
     public game: Game
@@ -51,23 +47,9 @@ export class GamesService {
 
   getDetails(gameId: string): Observable<GameDetails | undefined> {
     return this.getById(gameId).pipe(
-      switchMap((game) => {
-        if (!game) return of(undefined)
-        return this.players$.pipe(
-          map(players => {
-
-            const pMap = new Map<string, Player>()
-            for (const p of players) {
-              pMap.set(p.id, p)
-            }
-            const details = new GameDetails(game)
-            if (!game.players) game.players = []
-            for (const a of game.players) {
-              details.players.set(a, pMap.get(a.playerId.id)!)
-            }
-            return details
-          })
-        )
+      map((game) => {
+        if (!game) return undefined
+        return new GameDetails(game)
       })
     )
   }
@@ -76,10 +58,11 @@ export class GamesService {
     return this.players$
   }
 
-  async createPlayer(playerName: string): Promise<DocumentReference<Player>> {
+  async createPlayer(playerName: string): Promise<Player> {
     const ref = await this._players
       .add({name: playerName} as Player)
-    return ref
+    const player = await ref.get()
+    return player.data()!
   }
 
   async deletePlayer(player: Player) {
@@ -104,19 +87,22 @@ export class GamesService {
   }
 
   async addPlayer(game: Game, player: Player) {
-    const doc = this._players.doc(player.id)
-    game.players.push({status: 'pending', playerId: doc.ref})
-    await this._games.doc(game.id).set(game)
-    await this.invitePlayer(game, player)
+    const ref = await this.db.collection('rsvp').add({
+      playerId: player.id,
+      gameId: game.id,
+      status: 'pending'
+    })
+
+    await this.invitePlayer(game, player, ref.id)
   }
 
-  async invitePlayer(game: Game, player: Player) {
+  async invitePlayer(game: Game, player: Player, rsvpId: string) {
     if (this.auth.user?.userInfo.uid != game.manager.userId) {
       this.notifications.info("Only the game manager can send invites")
       return
     }
     const url = `${window.location.origin}/games/${game.id}`
-    const confirm = url + `?confirm=${player.id}`
+    const confirm = url + `?confirm=${rsvpId}`
 
     let to = player.email
     if (url.includes("localhost")) {
@@ -133,13 +119,20 @@ availability: <a href="${confirm}">${confirm}</a></p>`,
       }
     }
     const ref = await this.db.collection('mail').add(email)
-    console.log(ref.id)
+    console.log(email)
   }
 
-  async removePlayer(game: Game, player: Player) {
-    const a = game.players.findIndex(a => a.playerId.id === player.id)
-    if (a < 0) console.error("Player not added to game", game, player)
-    game.players.splice(a, 1)
-    await this._games.doc(game.id).set(game)
+  async removePlayer(rsvp: PlayerAttendance) {
+    await this.db.collection('rsvp').doc(rsvp.id).delete()
+  }
+
+  getRsvps(gameId: string): Observable<PlayerAttendance[]> {
+    return this.db.collection<PlayerAttendance>('rsvp', ref => ref
+      .where("gameId", "==", gameId))
+      .valueChanges(idObj)
+  }
+
+  async updateRsvp(rsvp: PlayerAttendance) {
+    return await this.db.collection<PlayerAttendance>('rsvp').doc(rsvp.id).update(rsvp)
   }
 }

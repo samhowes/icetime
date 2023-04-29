@@ -11,14 +11,15 @@ export interface Game {
   startTime: string,
   id: string,
   name: String,
-  players: PlayerAttendance[],
   manager: Manager
 }
 
 export type RsvpStatus = 'pending'|'confirmed'|'declined'
 export interface PlayerAttendance {
+  id: string
   status: RsvpStatus,
-  playerId: DocumentReference
+  playerId: string
+  gameId: string
 }
 
 export interface Player {
