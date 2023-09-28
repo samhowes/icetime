@@ -5,12 +5,12 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { initializeApp,provideFirebaseApp } from '@angular/fire/app';
 import { environment } from '../environments/environment';
-import { provideAuth,getAuth } from '@angular/fire/auth';
+import {provideAuth, getAuth, connectAuthEmulator} from '@angular/fire/auth';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MaterialModule} from "./material.module";
 import { GameListComponent } from './game-list/game-list.component';
 import { GameDetailComponent } from './game-detail/game-detail.component';
-import {getFirestore, provideFirestore} from "@angular/fire/firestore";
+import {connectFirestoreEmulator, getFirestore, provideFirestore} from "@angular/fire/firestore";
 import {AngularFireModule} from "@angular/fire/compat";
 import {ReactiveFormsModule} from "@angular/forms";
 import { PlayerDetailsComponent } from './player-details/player-details.component';
@@ -19,6 +19,7 @@ import { AttendanceListComponent } from './game-detail/attendance-list/attendanc
 import {PlayerListComponent} from "./player-list/player-list.component";
 import { AuthDialogComponent } from './auth-dialog/auth-dialog.component';
 import { ConfirmAttendanceComponent } from './game-detail/confirm-attendance/confirm-attendance.component';
+
 
 @NgModule({
   declarations: [
@@ -37,8 +38,20 @@ import { ConfirmAttendanceComponent } from './game-detail/confirm-attendance/con
     AppRoutingModule,
     AngularFireModule.initializeApp(environment.firebase),
     provideFirebaseApp(() => initializeApp(environment.firebase)),
-    provideAuth(() => getAuth()),
-    provideFirestore(() => getFirestore()),
+    provideAuth(() => {
+      const auth = getAuth()
+      if (environment.useEmulators) {
+        connectAuthEmulator(auth, 'http://localhost:9099', {disableWarnings:true})
+      }
+      return auth;
+    }),
+    provideFirestore(() => {
+      const firestore = getFirestore();
+      if (environment.useEmulators) {
+        connectFirestoreEmulator(firestore, 'localhost', 8080)
+      }
+      return firestore
+    }),
     BrowserAnimationsModule,
     MaterialModule,
     ReactiveFormsModule,
