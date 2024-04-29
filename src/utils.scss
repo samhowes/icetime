@@ -1,0 +1,10 @@
+@use 'src/variables' as *;
+
+.full-component {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+  background-color: $background-off-white;
+}
