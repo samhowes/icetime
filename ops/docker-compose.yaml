@@ -1,0 +1,25 @@
+version: "3.9"  # optional since v1.27.0
+services:
+  firebase:
+    build:
+      context: ..
+      dockerfile: ./ops/firebase/Dockerfile
+      target: local
+    ports:
+      - "4000:4000"
+      - "4400:4400"
+      - "4500:4500"
+      - "5001:5001"
+      - "9299:9299"
+      - "9000:9000"
+      - "9099:9099"
+      - "8080:8080"
+      - "9005:9005"
+      - "9199:9199"
+      - "8085:8085"
+    volumes:
+      - ~/.samhowes/icetime/_data:/data
+    environment:
+      FIREBASE_TOKEN: "${FIREBASE_TOKEN}" # apparently does not need an actual value
+      # WARN[0000] The "FIREBASE_TOKEN" variable is not set. Defaulting to a blank string.
+
