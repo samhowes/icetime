@@ -1,0 +1,6 @@
+<mat-toolbar color="primary" class="flex flex-row justify-between">
+  <strong class="app-name" *ngIf="appName"><home-link></home-link></strong>
+  <ng-content></ng-content>
+<!--  <account-widget></account-widget>-->
+</mat-toolbar>
+<mat-progress-bar [mode]="'indeterminate'" *ngIf="loading" color="primary"></mat-progress-bar>
