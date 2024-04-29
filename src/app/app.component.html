@@ -1,3 +1,7 @@
-<app-top-bar></app-top-bar>
+<top-bar></top-bar>
 
-App component Works!
+<router-outlet *ngIf="loaded"></router-outlet>
+
+<div *ngIf="!loaded" class="grow flex flex-row justify-center items-center">
+  <mat-spinner></mat-spinner>
+</div>

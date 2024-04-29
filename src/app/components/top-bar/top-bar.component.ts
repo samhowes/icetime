@@ -7,7 +7,7 @@ import {Component, Input} from '@angular/core';
 export class HomeLinkComponent {}
 
 @Component({
-  selector: 'app-top-bar',
+  selector: 'top-bar',
   templateUrl: './top-bar.component.html',
   styleUrls: ['./top-bar.component.scss']
 })

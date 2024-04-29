@@ -1,0 +1,14 @@
+<mat-dialog-content>
+  <div class="flex flex-col gap-3">
+    <div class="flex flex-row justify-between">
+      <h2>{{data.message}}</h2>
+      <mat-spinner diameter="25" *ngIf="isBusy"></mat-spinner>
+    </div>
+
+    <div id="firebaseui-auth-container"></div>
+
+    <button mat-stroked-button (click)="refuseSignIn()">
+      Cancel
+    </button>
+  </div>
+</mat-dialog-content>
