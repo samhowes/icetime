@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {ActivatedRoute} from "@angular/router";
 import {GamesService} from "../games.service";
 import {FormBuilder, FormGroup} from "@angular/forms";
-import {Player} from "../game-list/game";
+import {OldPlayer} from "../game-list/game";
 
 @Component({
   selector: 'app-player-details',
@@ -14,7 +14,7 @@ export class PlayerDetailsComponent implements OnInit {
   notFound = false
   isBusy = true;
   id: string;
-  player: Player|null = null;
+  player: OldPlayer|null = null;
 
   form!: FormGroup
   constructor(

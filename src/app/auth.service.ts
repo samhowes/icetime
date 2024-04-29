@@ -14,7 +14,7 @@ import {Auth} from "@angular/fire/auth";
 import {AuthDialogComponent} from "./auth-dialog/auth-dialog.component";
 import {MatDialog} from "@angular/material/dialog";
 import {AngularFirestore, AngularFirestoreDocument} from "@angular/fire/compat/firestore";
-import {Player, PlayerAttendance} from "./game-list/game";
+import {OldPlayer, PlayerAttendance} from "./game-list/game";
 
 export interface AuthResult {
   user: UserInfo,
@@ -123,14 +123,14 @@ export class AuthService {
   private async finishSignIn(user: UserInfo) {
     this.user = new AppUserInfo(user)
 
-    const doc = this.db.collection<Player>('players', ref => ref
+    const doc = this.db.collection<OldPlayer>('players', ref => ref
       .where('id', '==', this.user!.userInfo.uid))
     doc
       .valueChanges()
       .pipe(take(1))
       .subscribe(value => {
         if (value.length == 0) {
-          this.db.collection<Player>('players', (q) =>
+          this.db.collection<OldPlayer>('players', (q) =>
             q.where('email', '==', this.user!.userInfo.email))
             .valueChanges({idField: 'id'})
             .pipe(take(1))
@@ -141,7 +141,7 @@ export class AuthService {
               if (players.length) {
                  this.migratePlayerToUser(players[0], this.user!.userInfo.uid).then()
               }
-              else this.updateProfile({} as Player, this.user!.userInfo.uid!).then()
+              else this.updateProfile({} as OldPlayer, this.user!.userInfo.uid!).then()
             })
         } else {
           this.updateProfile(value[0], value[0].id).then();
@@ -151,12 +151,12 @@ export class AuthService {
     localStorage.setItem(AuthService.storageKey, JSON.stringify(this.user))
   }
 
-  private async updateProfile(player: Player, id: string) {
+  private async updateProfile(player: OldPlayer, id: string) {
     player.id = id
     player.name = this.user!.name
     player.email = this.user!.userInfo.email!
     player.claimed = true
-    await this.db.collection<Player>('players').doc(id)
+    await this.db.collection<OldPlayer>('players').doc(id)
       .set(player, {merge: true})
   }
 
@@ -166,7 +166,7 @@ export class AuthService {
     return from(signOut(this.firebase!!.auth))
   }
 
-  private async migratePlayerToUser(player: Player, uid: string) {
+  private async migratePlayerToUser(player: OldPlayer, uid: string) {
     const rsvps = await firstValueFrom(this.db.collection<PlayerAttendance>('rsvp', ref =>
       ref.where('playerId',  '==', player.id))
       .valueChanges({idField: 'id'}))
@@ -176,7 +176,7 @@ export class AuthService {
       await this.db.collection<PlayerAttendance>('rsvp').doc(rsvp.id).update(rsvp)
     }
 
-    await this.db.collection<Player>('players').doc(player.id).delete()
+    await this.db.collection<OldPlayer>('players').doc(player.id).delete()
     await this.updateProfile(player, uid)
     location.reload()
   }

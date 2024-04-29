@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {Game, Player} from "../../game-list/game";
+import {Game, OldPlayer} from "../../game-list/game";
 import {GamesService} from "../../games.service";
 import {GamePlayer} from "../game-detail.component";
 

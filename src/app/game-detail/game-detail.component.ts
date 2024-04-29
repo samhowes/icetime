@@ -5,7 +5,7 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 import {FormArray, FormBuilder} from "@angular/forms";
 import {combineLatest, combineLatestWith, debounce, map, Observable, of, startWith, take, tap} from "rxjs";
 import {MatAutocompleteSelectedEvent} from "@angular/material/autocomplete";
-import {Player, PlayerAttendance, RsvpStatus} from "../game-list/game";
+import {OldPlayer, PlayerAttendance, RsvpStatus} from "../game-list/game";
 import {MatDialog} from "@angular/material/dialog";
 import {AuthService} from "../auth.service";
 import {EditGameComponent, EditGameData} from "../edit-game/edit-game.component";
@@ -13,14 +13,14 @@ import {EditGameComponent, EditGameData} from "../edit-game/edit-game.component"
 
 export class GamePlayer {
   constructor(
-    public player: Player,
+    public player: OldPlayer,
     public rsvp: PlayerAttendance
   ) {
   }
 }
 
 export class PlayerGroupings {
-  map: Map<string, Player> = new Map<string, Player>()
+  map: Map<string, OldPlayer> = new Map<string, OldPlayer>()
   confirmed: GamePlayer[] = [];
   pending: GamePlayer[] = [];
   declined: GamePlayer[] = []
@@ -43,11 +43,11 @@ export class GameDetailComponent implements OnInit {
   hasChanges = false;
   addPlayer = this.fb.control('');
   addPlayerForm = this.fb.group({player: this.addPlayer})
-  filteredOptions$: Observable<Player[]> = of([])
+  filteredOptions$: Observable<OldPlayer[]> = of([])
 
   players$ = this.games.players$
-  autoCompleteDisplay = (player: any) => (player || {} as Player).name ? (player as Player).name : player;
-  currentPlayer: Player | null = null;
+  autoCompleteDisplay = (player: any) => (player || {} as OldPlayer).name ? (player as OldPlayer).name : player;
+  currentPlayer: OldPlayer | null = null;
   currentAttendance: GamePlayer | null = null;
   canManage = false;
 
@@ -81,7 +81,7 @@ export class GameDetailComponent implements OnInit {
 
     this.games.getPlayers().pipe(
       tap((players) => {
-        this.groupings.map = new Map<string, Player>()
+        this.groupings.map = new Map<string, OldPlayer>()
         for (const player of players) {
           this.groupings.map.set(player.id, player)
         }
@@ -126,7 +126,7 @@ export class GameDetailComponent implements OnInit {
     this.games.getRsvps(gameId!).subscribe()
   }
 
-  private filterPlayers(players: Player[]) {
+  private filterPlayers(players: OldPlayer[]) {
     this.filteredOptions$ = this.addPlayer.valueChanges.pipe(
       startWith(''),
       map(value => {
@@ -153,18 +153,18 @@ export class GameDetailComponent implements OnInit {
     await this.games.addPlayer(this.details.game, player)
   }
 
-  async addPlayerToGame(player: Player) {
+  async addPlayerToGame(player: OldPlayer) {
     await this.games.addPlayer(this.details.game, player)
   }
 
   async selectPlayer($event: MatAutocompleteSelectedEvent) {
-    const player = $event.option.value as Player
+    const player = $event.option.value as OldPlayer
     console.log('selectPlayer', player)
     this.addPlayer.reset()
     await this.addPlayerToGame(player)
   }
 
-  async deletePlayer(player: Player) {
+  async deletePlayer(player: OldPlayer) {
     await this.games.deletePlayer(player)
   }
 

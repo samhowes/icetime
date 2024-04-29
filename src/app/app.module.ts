@@ -19,6 +19,7 @@ import { AttendanceListComponent } from './game-detail/attendance-list/attendanc
 import {PlayerListComponent} from "./player-list/player-list.component";
 import { AuthDialogComponent } from './auth-dialog/auth-dialog.component';
 import { ConfirmAttendanceComponent } from './game-detail/confirm-attendance/confirm-attendance.component';
+import { LeagueComponent } from './league/league.component';
 
 
 @NgModule({
@@ -32,13 +33,23 @@ import { ConfirmAttendanceComponent } from './game-detail/confirm-attendance/con
     AttendanceListComponent,
     AuthDialogComponent,
     ConfirmAttendanceComponent,
+    LeagueComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     AngularFireModule.initializeApp(environment.firebase),
-    provideFirebaseApp(() => initializeApp(environment.firebase)),
-    provideAuth(() => {
+    provideFirebaseApp(() => {
+      const app = initializeApp(environment.firebase);
+      if (environment.useEmulators) {
+        const auth = getAuth(app)
+        connectAuthEmulator(auth, 'http://localhost:9099', {disableWarnings:true})
+        const firestore = getFirestore(app)
+        connectFirestoreEmulator(firestore, 'localhost', 8080)
+      }
+      return app
+    }),
+    provideAuth((app) => {
       const auth = getAuth()
       if (environment.useEmulators) {
         connectAuthEmulator(auth, 'http://localhost:9099', {disableWarnings:true})
